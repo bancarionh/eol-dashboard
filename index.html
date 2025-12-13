@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Asset EOL Dashboard v2.0</title>
+    <title>IT Asset EOL Dashboard v2.1</title>
     
     <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,26 +20,28 @@
         #error-box { display: none; }
     </style>
 
-    <!-- 3. Libraries (Switched to CDNJS for React - Faster/More Reliable) -->
+    <!-- 3. Libraries (Switched to JSDelivr - Most Reliable for Thailand/Asia) -->
+    
     <!-- React & ReactDOM -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Prop-Types (Dependency for Recharts) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+    <!-- Utilities (Lodash & PropTypes) - Required by some Recharts versions -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
     
-    <!-- Recharts (Keep UNPKG or use JSDelivr if preferred) -->
-    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
+    <!-- Recharts (Using v2.10.3 - Known Stable UMD Version) -->
+    <script src="https://cdn.jsdelivr.net/npm/recharts@2.10.3/umd/Recharts.min.js"></script>
 
     <!-- 4. Babel Standalone -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-900">
     
     <!-- Error Display -->
     <div id="error-box" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
         <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-lg w-full shadow-lg">
-            <h2 class="text-red-700 font-bold text-xl mb-2">เกิดข้อผิดพลาด (System Errorna)</h2>
+            <h2 class="text-red-700 font-bold text-xl mb-2">เกิดข้อผิดพลาด (System Error1)</h2>
             <div class="bg-white p-3 rounded border border-red-100 mb-4">
                 <p id="error-message" class="text-red-600 font-mono text-sm break-words"></p>
             </div>
@@ -48,7 +50,7 @@
                 <ul class="list-disc pl-5 space-y-1">
                     <li>กด <b>Ctrl + F5</b> เพื่อล้าง Cache (สำคัญมาก)</li>
                     <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
-                    <li>รอสักครู่แล้วลองใหม่ (CDN อาจจะช้าในบางครั้ง)</li>
+                    <li>หากใช้เน็ตองค์กร (Proxy/VPN) อาจมีการบล็อก CDN</li>
                 </ul>
             </div>
         </div>
@@ -57,7 +59,7 @@
     <div id="root" class="min-h-screen flex items-center justify-center">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-slate-500">กำลังโหลด Dashboard v2.0...</p>
+            <p class="text-slate-500">กำลังโหลด Dashboard v2.1 (Stable)...</p>
         </div>
     </div>
 
@@ -77,7 +79,8 @@
             // --- Check Libraries Individually ---
             if (!window.React) throw new Error("React library failed to load.");
             if (!window.ReactDOM) throw new Error("ReactDOM library failed to load.");
-            if (!window.Recharts) throw new Error("Recharts library failed to load. (Prop-types might be missing)");
+            // Recharts check: If prop-types is missing, window.Recharts might be undefined or broken
+            if (!window.Recharts) throw new Error("Recharts library failed to load. (Check internet connection)");
 
             const { useState, useMemo, useEffect } = React;
             const { createRoot } = ReactDOM;
@@ -359,7 +362,7 @@
                                 <div className="flex items-center gap-2">
                                     <Icons.LayoutDashboard className="text-blue-600 w-8 h-8" />
                                     <div>
-                                        <h1 className="text-xl font-bold text-slate-800">IT Asset EOL Dashboard <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">(v2.0 Loaded ✅)</span></h1>
+                                        <h1 className="text-xl font-bold text-slate-800">IT Asset EOL Dashboard <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">(v2.1 Stable ✅)</span></h1>
                                         <p className="text-sm text-slate-500">Hardware & Software Lifecycle Monitor</p>
                                     </div>
                                 </div>
