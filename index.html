@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Asset EOL Dashboard v2.1</title>
+    <title>IT Asset EOL Dashboard v2.32</title>
     
     <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,44 +13,35 @@
     
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         #error-box { display: none; }
+        .sticky-filter { top: 76px; } 
     </style>
 
-    <!-- 3. Libraries (Switched to JSDelivr - Most Reliable for Thailand/Asia) -->
-    
-    <!-- React & ReactDOM -->
+    <!-- 3. Libraries (JSDelivr) -->
     <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    
-    <!-- Utilities (Lodash & PropTypes) - Required by some Recharts versions -->
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
-    
-    <!-- Recharts (Using v2.10.3 - Known Stable UMD Version) -->
     <script src="https://cdn.jsdelivr.net/npm/recharts@2.10.3/umd/Recharts.min.js"></script>
-
-    <!-- 4. Babel Standalone -->
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-900">
     
-    <!-- Error Display -->
     <div id="error-box" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
         <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-lg w-full shadow-lg">
-            <h2 class="text-red-700 font-bold text-xl mb-2">เกิดข้อผิดพลาด (System Error1)</h2>
+            <h2 class="text-red-700 font-bold text-xl mb-2">เกิดข้อผิดพลาด (System Error)</h2>
             <div class="bg-white p-3 rounded border border-red-100 mb-4">
                 <p id="error-message" class="text-red-600 font-mono text-sm break-words"></p>
             </div>
             <div class="text-sm text-slate-600 space-y-2">
                 <p class="font-semibold">วิธีแก้ไขเบื้องต้น:</p>
                 <ul class="list-disc pl-5 space-y-1">
-                    <li>กด <b>Ctrl + F5</b> เพื่อล้าง Cache (สำคัญมาก)</li>
-                    <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
-                    <li>หากใช้เน็ตองค์กร (Proxy/VPN) อาจมีการบล็อก CDN</li>
+                    <li>กด <b>Ctrl + F5</b> เพื่อล้าง Cache</li>
                 </ul>
             </div>
         </div>
@@ -59,12 +50,11 @@
     <div id="root" class="min-h-screen flex items-center justify-center">
         <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-slate-500">กำลังโหลด Dashboard v2.1 (Stable)...</p>
+            <p class="text-slate-500">กำลังโหลด Dashboard v2.32 (Added Pie Charts)...</p>
         </div>
     </div>
 
     <script>
-        // Global Error Handler
         window.onerror = function(msg, url, line, col, error) {
             document.getElementById('error-box').style.display = 'flex';
             document.getElementById('error-message').textContent = msg + " (Line: " + line + ")";
@@ -73,14 +63,9 @@
         };
     </script>
 
-    <!-- 5. Application Code -->
     <script type="text/babel">
         try {
-            // --- Check Libraries Individually ---
-            if (!window.React) throw new Error("React library failed to load.");
-            if (!window.ReactDOM) throw new Error("ReactDOM library failed to load.");
-            // Recharts check: If prop-types is missing, window.Recharts might be undefined or broken
-            if (!window.Recharts) throw new Error("Recharts library failed to load. (Check internet connection)");
+            if (!window.React || !window.ReactDOM || !window.Recharts) throw new Error("Libraries failed to load.");
 
             const { useState, useMemo, useEffect } = React;
             const { createRoot } = ReactDOM;
@@ -88,7 +73,6 @@
                 PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip: RechartsTooltip, Legend, ResponsiveContainer 
             } = window.Recharts;
 
-            // --- Inline Icons (SVG) ---
             const Icons = {
                 LayoutDashboard: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>,
                 Upload: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
@@ -100,12 +84,17 @@
                 Filter: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
                 Trash2: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
                 FileSpreadsheet: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/></svg>,
+                Grid: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>,
+                List: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>,
+                Briefcase: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
                 HardDrive: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg>,
                 Box: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>,
-                FileDown: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+                FileDown: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>,
+                CheckCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+                XCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
+                Eye: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+                HelpCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             };
-
-            // --- Utility Functions ---
 
             const parseDate = (dateStr) => {
                 if (!dateStr || dateStr === 'Not Announced' || dateStr.trim() === '') return null;
@@ -122,29 +111,35 @@
                 if (diffDays < 0) return 'Expired';
                 if (diffDays <= 180) return 'Critical'; 
                 if (diffDays <= 365) return 'Warning';  
+                if (diffDays <= 730) return 'Watchlist';
                 return 'Good';
             };
 
-            const STATUS_COLORS = {
-                Expired: '#EF4444', 
-                Critical: '#F97316', 
-                Warning: '#EAB308', 
-                Good: '#22C55E',    
-                Unknown: '#94A3B8'  
+            const STATUS_CONFIG = {
+                Expired: { color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', icon: Icons.XCircle, iconColor: 'text-red-600', iconBg: 'bg-red-100' },
+                Critical: { color: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200', icon: Icons.AlertTriangle, iconColor: 'text-orange-600', iconBg: 'bg-orange-100' },
+                Warning: { color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-200', icon: Icons.AlertTriangle, iconColor: 'text-yellow-600', iconBg: 'bg-yellow-100' },
+                Watchlist: { color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', icon: Icons.Eye, iconColor: 'text-blue-600', iconBg: 'bg-blue-100' },
+                Good: { color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200', icon: Icons.CheckCircle, iconColor: 'text-green-600', iconBg: 'bg-green-100' },
+                Unknown: { color: 'text-slate-700', bg: 'bg-slate-50', border: 'border-slate-200', icon: Icons.HelpCircle, iconColor: 'text-slate-500', iconBg: 'bg-slate-200' },
             };
 
             const STATUS_LABELS = {
                 Expired: 'Expired',
-                Critical: 'Critical (< 6mo)',
-                Warning: 'Warning (< 1yr)',
-                Good: 'Good',
+                Critical: '< 6 Months',
+                Warning: '6 - 12 Months',
+                Watchlist: '1 - 2 Years',
+                Good: '> 2 Years',
                 Unknown: 'Unknown'
             };
+            
+            const STATUS_ORDER = ['Expired', 'Critical', 'Warning', 'Watchlist', 'Good', 'Unknown'];
+            
+            // Pie Chart Colors
+            const PIE_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6', '#F472B6', '#64748B'];
 
-            // Template CSV Content
             const TEMPLATE_HEADERS = `ProjectCode,Project Name,Vendor,Device Type,Product Type,Hostname,Part Number,SerialNumber,Version,Major Version,HW EOL Date,HW LDoS,SW EOL Date,SW LDoS`;
 
-            // CSV Parser
             const parseCSV = (text) => {
                 const rows = [];
                 let currentRow = [];
@@ -184,53 +179,70 @@
                 });
             };
 
-            // --- Components ---
-
-            function KPICard({ title, value, icon: Icon, color, subValue }) {
+            function StatusBox({ label, count, config }) {
+                const Icon = config.icon;
                 return (
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-start justify-between hover:shadow-md transition-shadow">
-                        <div>
-                            <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-                            <h2 className="text-2xl font-bold text-slate-800">{value}</h2>
-                            {subValue && <p className="text-sm text-slate-400 mt-1">{subValue} of Total</p>}
+                    <div className={`p-3 rounded-xl border ${config.bg} ${config.border} flex items-center gap-3 transition-all hover:shadow-md h-full`}>
+                         <div className={`p-2.5 rounded-full flex-shrink-0 ${config.iconBg} ${config.iconColor}`}>
+                             <Icon className="w-5 h-5" />
                         </div>
-                        <div className={`p-3 rounded-lg ${color} bg-opacity-10`}>
-                            <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
+                        <div className="flex flex-col min-w-0">
+                            <span className={`text-2xl font-bold leading-tight ${config.color}`}>{count}</span>
+                            <span className={`text-[12px] font-bold uppercase tracking-wide opacity-80 truncate ${config.color}`}>{label}</span>
                         </div>
                     </div>
                 );
             }
 
             function StatusBadge({ status, type }) {
-                const styles = {
-                    Expired: 'bg-red-100 text-red-700 border-red-200',
-                    Critical: 'bg-orange-100 text-orange-700 border-orange-200',
-                    Warning: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                    Good: 'bg-green-100 text-green-700 border-green-200',
-                    Unknown: 'bg-slate-100 text-slate-600 border-slate-200'
-                };
+                const config = STATUS_CONFIG[status] || STATUS_CONFIG.Unknown;
                 return (
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium border ${styles[status] || styles.Unknown}`}>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium border ${config.bg} ${config.color} ${config.border}`}>
                         {type}: {STATUS_LABELS[status]}
                     </span>
                 );
             }
 
-            // --- Main App Component ---
+            // --- Custom Label Renderers (Fix for Error 130) ---
+            const renderBarLabelTop = (props) => {
+                const { x, y, width, value } = props;
+                if (!value) return null;
+                return (
+                    <text x={x + width / 2} y={y - 5} fill="#64748b" textAnchor="middle" fontSize={12} fontWeight="bold">
+                        {value}
+                    </text>
+                );
+            };
+
+            const renderBarLabelRight = (props) => {
+                const { x, y, width, height, value } = props;
+                if (!value) return null;
+                return (
+                    <text x={x + width + 5} y={y + height / 2} fill="#64748b" textAnchor="start" dominantBaseline="middle" fontSize={12} fontWeight="bold">
+                        {value}
+                    </text>
+                );
+            };
+            
+            // Standard Recharts Label with percentage
+            const renderPieLabel = (props) => {
+                const { name, value, percent } = props;
+                if (!value) return null;
+                return `${value} (${(percent * 100).toFixed(0)}%)`;
+            };
 
             function EOLDashboard() {
                 const [rawData, setRawData] = useState([]);
                 const [filteredData, setFilteredData] = useState([]);
                 const [loading, setLoading] = useState(false);
+                const [viewMode, setViewMode] = useState('standard');
                 
-                // Filters
                 const [selectedVendor, setSelectedVendor] = useState('All');
                 const [selectedProductType, setSelectedProductType] = useState('All');
                 const [selectedHwStatus, setSelectedHwStatus] = useState('All');
                 const [selectedSwStatus, setSelectedSwStatus] = useState('All');
                 const [searchQuery, setSearchQuery] = useState('');
 
-                // Process Data
                 const processData = (csvData) => {
                     return csvData.map(item => {
                         const hwDate = parseDate(item['HW EOL Date']);
@@ -246,7 +258,6 @@
                     });
                 };
 
-                // Filter Logic
                 useEffect(() => {
                     let result = rawData;
                     if (selectedVendor !== 'All') result = result.filter(item => item.Vendor === selectedVendor);
@@ -258,13 +269,13 @@
                         result = result.filter(item => 
                             (item.Hostname && item.Hostname.toLowerCase().includes(q)) ||
                             (item.SerialNumber && item.SerialNumber.toLowerCase().includes(q)) ||
-                            (item['Part Number'] && item['Part Number'].toLowerCase().includes(q))
+                            (item['Part Number'] && item['Part Number'].toLowerCase().includes(q)) ||
+                            (item['Project Name'] && item['Project Name'].toLowerCase().includes(q))
                         );
                     }
                     setFilteredData(result);
                 }, [rawData, selectedVendor, selectedProductType, selectedHwStatus, selectedSwStatus, searchQuery]);
 
-                // Handlers
                 const handleFileUpload = (event) => {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -299,14 +310,9 @@
                     setSearchQuery('');
                 };
 
-                // Statistics
                 const stats = useMemo(() => {
                     const total = filteredData.length;
-                    const hwExpired = filteredData.filter(d => d.hwStatus === 'Expired').length;
-                    const swExpired = filteredData.filter(d => d.swStatus === 'Expired').length;
-                    const hwCritical = filteredData.filter(d => d.hwStatus === 'Critical').length;
-                    const swCritical = filteredData.filter(d => d.swStatus === 'Critical').length;
-                    return { total, hwExpired, swExpired, hwCritical, swCritical };
+                    return { total };
                 }, [filteredData]);
 
                 const yearData = useMemo(() => {
@@ -327,13 +333,13 @@
                 }, [filteredData]);
 
                 const hwStatusDist = useMemo(() => {
-                    const counts = { Expired: 0, Critical: 0, Warning: 0, Good: 0, Unknown: 0 };
+                    const counts = { Expired: 0, Critical: 0, Warning: 0, Watchlist: 0, Good: 0, Unknown: 0 };
                     filteredData.forEach(d => counts[d.hwStatus]++);
                     return Object.keys(counts).map(key => ({ name: STATUS_LABELS[key], value: counts[key], key }));
                 }, [filteredData]);
 
                 const swStatusDist = useMemo(() => {
-                    const counts = { Expired: 0, Critical: 0, Warning: 0, Good: 0, Unknown: 0 };
+                    const counts = { Expired: 0, Critical: 0, Warning: 0, Watchlist: 0, Good: 0, Unknown: 0 };
                     filteredData.forEach(d => counts[d.swStatus]++);
                     return Object.keys(counts).map(key => ({ name: STATUS_LABELS[key], value: counts[key], key }));
                 }, [filteredData]);
@@ -349,20 +355,104 @@
                     filteredData.forEach(d => counts[d['Product Type']] = (counts[d['Product Type']] || 0) + 1);
                     return Object.keys(counts).map(key => ({ name: key, value: counts[key] })).sort((a, b) => b.value - a.value).slice(0, 10);
                 }, [filteredData]);
+                
+                // New: Device Type Distribution
+                const deviceTypeDist = useMemo(() => {
+                    const counts = {};
+                    filteredData.forEach(d => {
+                        // Use 'Device Type' column or fallback to 'Unknown'
+                        const type = d['Device Type'] || 'Unknown';
+                        counts[type] = (counts[type] || 0) + 1;
+                    });
+                    return Object.keys(counts).map(key => ({ name: key, value: counts[key] })).sort((a, b) => b.value - a.value);
+                }, [filteredData]);
 
                 const vendors = ['All', ...new Set(rawData.map(d => d.Vendor).filter(Boolean))];
                 const productTypes = ['All', ...new Set(rawData.map(d => d['Product Type']).filter(Boolean))];
-                const statusOptions = ['All', 'Expired', 'Critical', 'Warning', 'Good', 'Unknown'];
+                const statusOptions = ['All', 'Expired', 'Critical', 'Warning', 'Watchlist', 'Good', 'Unknown'];
+
+                const renderTable = (data, mode) => (
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-medium whitespace-nowrap">
+                            <tr>
+                                <th className="px-4 py-3">Hostname</th>
+                                {mode === 'standard' && <th className="px-4 py-3">Project Name</th>}
+                                {mode === 'standard' && <th className="px-4 py-3">Vendor</th>}
+                                {mode === 'standard' && <th className="px-4 py-3">Model / Type</th>}
+                                <th className="px-4 py-3">Part Number</th>
+                                {mode === 'standard' && <th className="px-4 py-3">Serial Number</th>}
+                                <th className="px-4 py-3">SW Version</th>
+                                {(mode === 'standard' || mode === 'hw') && <th className="px-4 py-3">HW EOL</th>}
+                                {(mode === 'standard' || mode === 'sw') && <th className="px-4 py-3">SW EOL</th>}
+                                {(mode === 'standard' || mode === 'hw') && <th className="px-4 py-3">HW Status</th>}
+                                {(mode === 'standard' || mode === 'sw') && <th className="px-4 py-3">SW Status</th>}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 whitespace-nowrap">
+                            {data.map((item) => (
+                                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="px-4 py-3 font-medium text-slate-700">{item.Hostname}</td>
+                                    {mode === 'standard' && <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate" title={item['Project Name']}>{item['Project Name']}</td>}
+                                    {mode === 'standard' && <td className="px-4 py-3 text-slate-800">{item.Vendor}</td>}
+                                    {mode === 'standard' && <td className="px-4 py-3 text-slate-600">{item['Product Type']}</td>}
+                                    <td className="px-4 py-3 font-mono text-slate-600">{item['Part Number']}</td>
+                                    {mode === 'standard' && <td className="px-4 py-3 font-mono text-slate-500">{item.SerialNumber}</td>}
+                                    <td className="px-4 py-3 font-mono text-slate-600">{item['Version']}</td>
+                                    
+                                    {(mode === 'standard' || mode === 'hw') && (
+                                        <td className="px-4 py-3"><div className="flex items-center gap-2">{item['HW EOL Date']}</div></td>
+                                    )}
+                                    
+                                    {(mode === 'standard' || mode === 'sw') && <td className="px-4 py-3">{item['SW EOL Date']}</td>}
+                                    
+                                    {(mode === 'standard' || mode === 'hw') && (
+                                        <td className="px-4 py-3"><StatusBadge status={item.hwStatus} type="HW" /></td>
+                                    )}
+                                    
+                                    {(mode === 'standard' || mode === 'sw') && (
+                                        <td className="px-4 py-3"><StatusBadge status={item.swStatus} type="SW" /></td>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                );
+
+                if (rawData.length === 0) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+                            <div className="bg-white p-10 rounded-2xl shadow-xl border border-slate-100 max-w-xl w-full text-center">
+                                <div className="bg-blue-50 p-6 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                                    <Icons.FileSpreadsheet className="w-12 h-12 text-blue-600" />
+                                </div>
+                                <h1 className="text-3xl font-bold text-slate-800 mb-2">IT Asset EOL Dashboard <span className="text-sm font-normal text-slate-400 block mt-1">v2.32</span></h1>
+                                <p className="text-slate-500 mb-8 text-lg">
+                                    Please upload your hardware/software EOL CSV file to visualize the lifecycle data.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <label className="flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl cursor-pointer hover:bg-blue-700 transition shadow-lg hover:shadow-blue-200 text-lg font-semibold transform hover:-translate-y-1">
+                                        <Icons.Upload className="w-6 h-6" /> <span>Import CSV File</span>
+                                        <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+                                    </label>
+                                    <button onClick={handleDownloadTemplate} className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition text-lg font-semibold transform hover:-translate-y-1">
+                                        <Icons.FileDown className="w-6 h-6" /> <span>Get Template</span>
+                                    </button>
+                                </div>
+                                <p className="mt-8 text-sm text-slate-400">Required Columns: Vendor, Hostname, SerialNumber, HW EOL Date, SW EOL Date</p>
+                            </div>
+                        </div>
+                    );
+                }
 
                 return (
                     <div className="min-h-screen">
-                        {/* Header */}
-                        <div className="bg-white shadow-sm sticky top-0 z-20">
-                            <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                        {/* Header (Sticky z-30) */}
+                        <div className="bg-white shadow-sm sticky top-0 z-30">
+                            <div className="w-full px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div className="flex items-center gap-2">
                                     <Icons.LayoutDashboard className="text-blue-600 w-8 h-8" />
                                     <div>
-                                        <h1 className="text-xl font-bold text-slate-800">IT Asset EOL Dashboard <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">(v2.1 Stable ✅)</span></h1>
+                                        <h1 className="text-xl font-bold text-slate-800">IT Asset EOL Dashboard</h1>
                                         <p className="text-sm text-slate-500">Hardware & Software Lifecycle Monitor</p>
                                     </div>
                                 </div>
@@ -374,205 +464,259 @@
                                         <Icons.Upload className="w-4 h-4" /> <span>Import CSV</span>
                                         <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
                                     </label>
-                                    {rawData.length > 0 && (
-                                        <button onClick={handleClearData} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-full" title="Clear Data">
-                                            <Icons.Trash2 className="w-5 h-5" />
-                                        </button>
-                                    )}
+                                    <button onClick={handleClearData} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-full" title="Clear Data">
+                                        <Icons.Trash2 className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-                            {rawData.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border-2 border-dashed border-slate-200">
-                                    <div className="bg-blue-50 p-6 rounded-full mb-4"><Icons.FileSpreadsheet className="w-16 h-16 text-blue-500" /></div>
-                                    <h2 className="text-2xl font-bold text-slate-700 mb-2">No Data Available</h2>
-                                    <p className="text-slate-500 mb-6 text-center max-w-md">Please upload your hardware/software EOL CSV file to generate the dashboard.</p>
-                                    <div className="flex gap-4">
-                                        <button onClick={handleDownloadTemplate} className="flex items-center gap-2 px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition shadow-sm text-base font-medium">
-                                            <Icons.FileDown className="w-5 h-5" /> <span>Download Template</span>
-                                        </button>
-                                        <label className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition shadow-md text-base font-medium">
-                                            <Icons.Upload className="w-5 h-5" /> <span>Upload CSV File</span>
-                                            <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
-                                        </label>
-                                    </div>
-                                    <p className="mt-4 text-xs text-slate-400">Supported Format: ProjectCode, Vendor, Hostname, HW EOL Date, SW EOL Date, etc.</p>
+                        <div className="w-full px-6 py-6 space-y-6">
+
+                            {/* Filters (Moved Up) */}
+                            <div className="sticky sticky-filter z-20 bg-white p-4 rounded-xl shadow-md border border-slate-100 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between transition-all">
+                                <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+                                    {[
+                                        { label: 'Vendor', val: selectedVendor, set: setSelectedVendor, opts: vendors, icon: Icons.Filter },
+                                        { label: 'Product Type', val: selectedProductType, set: setSelectedProductType, opts: productTypes, icon: Icons.Box },
+                                        { label: 'Hardware Status', val: selectedHwStatus, set: setSelectedHwStatus, opts: statusOptions, icon: Icons.HardDrive, isStatus: true },
+                                        { label: 'Software Status', val: selectedSwStatus, set: setSelectedSwStatus, opts: statusOptions, icon: Icons.Layers, isStatus: true }
+                                    ].map((f, i) => (
+                                        <div key={i} className="flex flex-col gap-1 w-[180px]">
+                                            <span className="text-xs font-semibold text-slate-500 ml-1">{f.label}</span>
+                                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-2">
+                                                <f.icon className="w-4 h-4 text-slate-400 shrink-0" />
+                                                <select className="w-full bg-transparent py-2 text-sm focus:outline-none" value={f.val} onChange={e => f.set(e.target.value)}>
+                                                    {f.isStatus ? (
+                                                        <>
+                                                            <option value="All">All Statuses</option>
+                                                            {f.opts.slice(1).map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+                                                        </>
+                                                    ) : (
+                                                        f.opts.map(v => <option key={v} value={v}>{v === 'All' ? `All ${f.label}s` : v}</option>)
+                                                    )}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ) : (
-                                <>
-                                    {/* KPIs */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <KPICard title="Total Devices" value={stats.total} icon={Icons.Server} color="bg-blue-500" />
-                                        <KPICard title="HW Expired" value={stats.hwExpired} icon={Icons.AlertTriangle} color="bg-red-500" subValue={`${((stats.hwExpired/stats.total || 0)*100).toFixed(1)}%`} />
-                                        <KPICard title="HW Critical (< 6mo)" value={stats.hwCritical} icon={Icons.Clock} color="bg-orange-500" />
-                                        <KPICard title="SW Critical (< 6mo)" value={stats.swCritical} icon={Icons.Layers} color="bg-yellow-500" />
-                                    </div>
-
-                                    {/* Filters */}
-                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                                        <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-                                            {[
-                                                { label: 'Vendor', val: selectedVendor, set: setSelectedVendor, opts: vendors, icon: Icons.Filter },
-                                                { label: 'Product Type', val: selectedProductType, set: setSelectedProductType, opts: productTypes, icon: Icons.Box },
-                                                { label: 'Hardware Status', val: selectedHwStatus, set: setSelectedHwStatus, opts: statusOptions, icon: Icons.HardDrive, isStatus: true },
-                                                { label: 'Software Status', val: selectedSwStatus, set: setSelectedSwStatus, opts: statusOptions, icon: Icons.Layers, isStatus: true }
-                                            ].map((f, i) => (
-                                                <div key={i} className="flex flex-col gap-1 w-[180px]">
-                                                    <span className="text-xs font-semibold text-slate-500 ml-1">{f.label}</span>
-                                                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-2">
-                                                        <f.icon className="w-4 h-4 text-slate-400 shrink-0" />
-                                                        <select className="w-full bg-transparent py-2 text-sm focus:outline-none" value={f.val} onChange={e => f.set(e.target.value)}>
-                                                            {f.isStatus ? (
-                                                                <>
-                                                                    <option value="All">All Statuses</option>
-                                                                    {f.opts.slice(1).map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
-                                                                </>
-                                                            ) : (
-                                                                f.opts.map(v => <option key={v} value={v}>{v === 'All' ? `All ${f.label}s` : v}</option>)
-                                                            )}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                <div className="relative w-full lg:w-72 mt-4 lg:mt-0">
+                                    <Icons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="text" placeholder="Search Hostname, Project..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                </div>
+                            </div>
+                            
+                            {/* Layout: Top Row (Status + Trend) */}
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                                {/* Left Column: Status Overview (Span 2/3) */}
+                                <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-6 h-full">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                            <Icons.LayoutDashboard className="w-5 h-5 text-blue-500" />
+                                            <span>Status Overview</span>
+                                        </h2>
+                                        <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-bold text-sm">
+                                            Total Devices: {stats.total}
                                         </div>
-                                        <div className="relative w-full lg:w-72 mt-4 lg:mt-0">
-                                            <Icons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                            <input type="text" placeholder="Search Hostname, Serial..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                    </div>
+                                    
+                                    {/* Hardware EOL */}
+                                    <div className="mb-6">
+                                        <h3 className="text-sm font-semibold text-slate-500 mb-3 flex items-center gap-2">
+                                            <Icons.HardDrive className="w-4 h-4" /> Hardware EOL Status
+                                        </h3>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                            {STATUS_ORDER.map(statusKey => {
+                                                const item = hwStatusDist.find(d => d.key === statusKey) || { value: 0 };
+                                                return (
+                                                    <StatusBox 
+                                                        key={statusKey} 
+                                                        label={STATUS_LABELS[statusKey]} 
+                                                        count={item.value} 
+                                                        config={STATUS_CONFIG[statusKey]}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     </div>
 
-                                    {/* Charts */}
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
-                                                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Clock className="w-5 h-5 text-blue-500" /> Annual EOL Trend</h3>
-                                                <div className="h-72">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <BarChart data={yearData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                            <XAxis dataKey="name" />
-                                                            <YAxis />
-                                                            <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                                            <Legend />
-                                                            <Bar dataKey="HW" name="Hardware EOL" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                                                            <Bar dataKey="SW" name="Software EOL" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                                                        </BarChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                                                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Filter className="w-5 h-5 text-purple-500" /> Vendor Distribution</h3>
-                                                <div className="h-72">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <BarChart layout="vertical" data={vendorDist} margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                                            <XAxis type="number" hide />
-                                                            <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} />
-                                                            <RechartsTooltip />
-                                                            <Bar dataKey="value" name="Devices" fill="#6366F1" radius={[0, 4, 4, 0]} />
-                                                        </BarChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                                                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.AlertTriangle className="w-5 h-5 text-orange-500" /> Hardware EOL Status</h3>
-                                                <div className="h-64">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <PieChart>
-                                                            <Pie data={hwStatusDist} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
-                                                                {hwStatusDist.map((entry, index) => <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.key]} />)}
-                                                            </Pie>
-                                                            <RechartsTooltip />
-                                                            <Legend verticalAlign="bottom" height={36}/>
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                                                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.AlertTriangle className="w-5 h-5 text-yellow-500" /> Software EOL Status</h3>
-                                                <div className="h-64">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <PieChart>
-                                                            <Pie data={swStatusDist} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
-                                                                {swStatusDist.map((entry, index) => <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.key]} />)}
-                                                            </Pie>
-                                                            <RechartsTooltip />
-                                                            <Legend verticalAlign="bottom" height={36}/>
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                                                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Box className="w-5 h-5 text-green-500" /> Product Types</h3>
-                                                <div className="h-64">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <BarChart data={typeDist} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                                            <XAxis type="number" hide />
-                                                            <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} />
-                                                            <RechartsTooltip />
-                                                            <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} />
-                                                        </BarChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </div>
+                                    {/* Software EOL */}
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-slate-500 mb-3 flex items-center gap-2">
+                                            <Icons.Layers className="w-4 h-4" /> Software EOL Status
+                                        </h3>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                            {STATUS_ORDER.map(statusKey => {
+                                                const item = swStatusDist.find(d => d.key === statusKey) || { value: 0 };
+                                                return (
+                                                    <StatusBox 
+                                                        key={statusKey} 
+                                                        label={STATUS_LABELS[statusKey]} 
+                                                        count={item.value} 
+                                                        config={STATUS_CONFIG[statusKey]}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Table */}
-                                    <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                            <h3 className="font-semibold text-slate-800">Device List</h3>
-                                            <span className="text-sm text-slate-500">{filteredData.length} Items</span>
-                                        </div>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-sm text-left">
-                                                <thead className="bg-slate-50 text-slate-500 font-medium">
-                                                    <tr>
-                                                        <th className="px-6 py-3">Hostname</th>
-                                                        <th className="px-6 py-3">Vendor / Model</th>
-                                                        <th className="px-6 py-3">Part Number</th>
-                                                        <th className="px-6 py-3">Serial Number</th>
-                                                        <th className="px-6 py-3">SW Version</th>
-                                                        <th className="px-6 py-3">HW EOL</th>
-                                                        <th className="px-6 py-3">SW EOL</th>
-                                                        <th className="px-6 py-3">Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-100">
-                                                    {filteredData.slice(0, 50).map((item) => (
-                                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                                            <td className="px-6 py-3 font-medium text-slate-700">{item.Hostname}</td>
-                                                            <td className="px-6 py-3"><div className="text-slate-800">{item.Vendor}</div><div className="text-sm text-slate-500">{item['Product Type']}</div></td>
-                                                            <td className="px-6 py-3 font-mono text-slate-600">{item['Part Number']}</td>
-                                                            <td className="px-6 py-3 font-mono text-slate-500">{item.SerialNumber}</td>
-                                                            <td className="px-6 py-3 font-mono text-slate-600">{item['Version']}</td>
-                                                            <td className="px-6 py-3">
-                                                                <div className="flex items-center gap-2">
-                                                                    {item['HW EOL Date']}
-                                                                    {item.hwStatus === 'Critical' && <Icons.AlertTriangle className="w-3 h-3 text-orange-500" />}
-                                                                    {item.hwStatus === 'Expired' && <Icons.AlertTriangle className="w-3 h-3 text-red-500" />}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-3">{item['SW EOL Date']}</td>
-                                                            <td className="px-6 py-3">
-                                                                <div className="flex flex-col gap-1">
-                                                                    <StatusBadge status={item.hwStatus} type="HW" />
-                                                                    <StatusBadge status={item.swStatus} type="SW" />
-                                                                </div>
-                                                            </td>
-                                                        </tr>
+                                {/* Right Column: Annual EOL Trend (Span 1/3) */}
+                                <div className="xl:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-full flex flex-col">
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2 flex-shrink-0">
+                                        <Icons.Clock className="w-5 h-5 text-blue-500" /> Annual EOL Trend
+                                    </h3>
+                                    <div className="flex-grow min-h-[300px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={yearData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="name" tick={{fontSize: 12}} />
+                                                <YAxis tick={{fontSize: 12}} />
+                                                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                                <Legend wrapperStyle={{fontSize: '12px'}} />
+                                                <Bar dataKey="HW" name="HW" fill="#3B82F6" radius={[4, 4, 0, 0]} label={renderBarLabelTop} />
+                                                <Bar dataKey="SW" name="SW" fill="#8B5CF6" radius={[4, 4, 0, 0]} label={renderBarLabelTop} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Secondary Charts Row: 3 Columns - All Pie Charts Now */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Vendor Distribution (Pie) */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-[400px]">
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Filter className="w-5 h-5 text-purple-500" /> Vendor</h3>
+                                    <div className="h-[340px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
+                                                <Pie
+                                                    data={vendorDist}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={40}
+                                                    outerRadius={75}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    label={renderPieLabel}
+                                                >
+                                                    {vendorDist.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                                                     ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                </Pie>
+                                                <RechartsTooltip />
+                                                <Legend wrapperStyle={{fontSize: '11px', bottom: '0px'}} verticalAlign="bottom" height={36}/>
+                                            </PieChart>
+                                        </ResponsiveContainer>
                                     </div>
-                                </>
-                            )}
+                                </div>
+
+                                {/* Product Types (Pie) */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-[400px]">
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Box className="w-5 h-5 text-green-500" /> Product</h3>
+                                    <div className="h-[340px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
+                                                <Pie
+                                                    data={typeDist}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={40}
+                                                    outerRadius={75}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    label={renderPieLabel}
+                                                >
+                                                    {typeDist.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip />
+                                                <Legend wrapperStyle={{fontSize: '11px', bottom: '0px'}} verticalAlign="bottom" height={36}/>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {/* Device Type (Pie) - Replaced Project Distribution */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-[400px]">
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><Icons.Briefcase className="w-5 h-5 text-teal-500" /> Device Type</h3>
+                                    <div className="h-[340px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
+                                                <Pie
+                                                    data={deviceTypeDist}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={40}
+                                                    outerRadius={75}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    label={renderPieLabel}
+                                                >
+                                                    {deviceTypeDist.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip />
+                                                <Legend wrapperStyle={{fontSize: '11px', bottom: '0px'}} verticalAlign="bottom" height={36}/>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Device List Table */}
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <h3 className="font-semibold text-slate-800">Device List</h3>
+                                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">{filteredData.length} Items</span>
+                                    </div>
+                                    <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
+                                        <button 
+                                            onClick={() => setViewMode('standard')} 
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'standard' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            title="Standard View (Single Column)"
+                                        >
+                                            <Icons.List className="w-4 h-4" /> <span className="hidden sm:inline">Standard</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => setViewMode('hw')} 
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'hw' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            title="Hardware Focus (Split View)"
+                                        >
+                                            <Icons.Grid className="w-4 h-4" /> <span className="hidden sm:inline">HW EOL</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => setViewMode('sw')} 
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'sw' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            title="Software Focus (Split View)"
+                                        >
+                                            <Icons.Grid className="w-4 h-4" /> <span className="hidden sm:inline">SW EOL</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="overflow-x-auto p-4">
+                                    {viewMode === 'standard' ? (
+                                        renderTable(filteredData.slice(0, 100), 'standard')
+                                    ) : (
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                                {renderTable(filteredData.slice(0, Math.ceil(filteredData.length / 2)), viewMode)}
+                                            </div>
+                                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                                {renderTable(filteredData.slice(Math.ceil(filteredData.length / 2)), viewMode)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {filteredData.length > 100 && viewMode === 'standard' && (
+                                        <div className="p-4 text-center text-slate-500 text-sm border-t border-slate-100 bg-slate-50">
+                                            Showing first 100 items. Please use filters to find specific devices.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
